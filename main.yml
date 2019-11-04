@@ -140,7 +140,7 @@
     register: postgres_service_info
     ignore_errors: yes
 
-  - when: "{{postgres_service_info.failed}}"
+  - when: postgres_service_info.failed
     block:
       - name: debug inside of block
         debug:
