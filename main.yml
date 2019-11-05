@@ -19,11 +19,11 @@
   become: true
 
   tasks:
-  - name: enable repos from open_three-tier-app.repo
-    template:
-      src: open_three-tier-app.repo
-      dest: /etc/yum.repos.d/open_three-tier-app.repo
-      mode: 0644
+  # - name: enable repos from open_three-tier-app.repo
+  #   template:
+  #     src: open_three-tier-app.repo
+  #     dest: /etc/yum.repos.d/open_three-tier-app.repo
+  #     mode: 0644
 
 - name: include haproxy_tasks.yml file
   import_playbook: haproxy_tasks.yml
