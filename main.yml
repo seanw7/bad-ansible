@@ -25,68 +25,73 @@
       dest: /etc/yum.repos.d/open_three-tier-app.repo
       mode: 0644
 
-- name: deploy haproxy
-  hosts: frontends
-  gather_facts: false # remove later! speeds up testing
-  become: true
+- name: include haproxy_tasks.yml file
+  import_playbook: haproxy_tasks.yml
 
-  tasks:
-  - name: Install latest version of httpie
-    package:
-      name: httpie
-      state: latest
+# - name: deploy haproxy
+#   hosts: frontends
+#   gather_facts: false # remove later! speeds up testing
+#   become: true
 
-  - name: Install latest HAProxy with Yum
-    yum:
-      name: haproxy 
-      state: latest
+#   tasks:
+#   - name: Install latest version of httpie
+#     package:
+#       name: httpie
+#       state: latest
 
-  - name: Make sure HAProxy is started
-    service:
-      name: haproxy
-      state: started
+#   - name: Install latest HAProxy with Yum
+#     yum:
+#       name: haproxy 
+#       state: latest
 
-  - name: configure haproxy
-    template:
-      src: ./haproxy.cfg.j2
-      dest: /etc/haproxy/haproxy.cfg
+#   - name: Make sure HAProxy is started
+#     service:
+#       name: haproxy
+#       state: started
 
-  - name: restart HAproxy
-    service:
-      name: haproxy
-      state: restarted
+#   - name: configure haproxy
+#     template:
+#       src: ./haproxy.cfg.j2
+#       dest: /etc/haproxy/haproxy.cfg
 
+#   - name: restart HAproxy
+#     service:
+#       name: haproxy
+#       state: restarted
 
-- name: deploy tomcat
-  hosts: apps
-  gather_facts: false
-  become: true
+- name: include tomcat_tasks.yml file
+  import_playbook: tomcat_tasks.yml
 
-  tasks:
-  - name: install tomcat
-    package:
-      name: tomcat
-      state: latest
-  - name: enable tomcat at boot
-    service:
-      name: tomcat
-      enabled: yes
+# - name: deploy tomcat
+#   hosts: apps
+#   gather_facts: false
+#   become: true
 
-  - name: create ansible tomcat directory
-    file:
-      path: /usr/share/tomcat/webapps/ROOT
-      state: directory
+#   tasks:
+#   - name: install tomcat
+#     package:
+#       name: tomcat
+#       state: latest
+#   - name: enable tomcat at boot
+#     service:
+#       name: tomcat
+#       enabled: yes
 
-  - name: copy static index.html to tomcat webapps/ansible/index.html
-    template:
-      src: index.html.j2
-      dest: /usr/share/tomcat/webapps/ROOT/index.html
-      mode: 0644
+#   - name: create ansible tomcat directory
+#     file:
+#       path: /usr/share/tomcat/webapps/ROOT
+#       state: directory
 
-  - name: start tomcat
-    service:
-      name: tomcat
-      state: started
+#   - name: copy static index.html to tomcat webapps/ansible/index.html
+#     template:
+#       src: index.html.j2
+#       dest: /usr/share/tomcat/webapps/ROOT/index.html
+#       mode: 0644
+
+#   - name: start tomcat
+#     service:
+#       name: tomcat
+#       state: started
 
 - name: index.html on app 1
   hosts: app1
@@ -110,59 +115,62 @@
       src: index.html.app2
       dest: /usr/share/tomcat/webapps/ansible/index.html
 
-#TODO: Figureout which of these host params below are correct
-- name: deploy postgres
-  #hosts: apps
-  gather_facts: false
-  become: true
-  hosts: appdbs
+- name: include postgres_tasks.yml file
+  import_playbook: postgres_tasks.yml
 
-  tasks:
-  - name: Install postgres-server package with Yum
-    yum:
-     name: postgresql-server
-     state: latest
+# #TODO: Figureout which of these host params below are correct
+# - name: deploy postgres
+#   #hosts: apps
+#   gather_facts: false
+#   become: true
+#   hosts: appdbs
 
-  - name: enable apache at boot
-    service:
-      name: postgresql
-      enabled: yes
+#   tasks:
+#   - name: Install postgres-server package with Yum
+#     yum:
+#      name: postgresql-server
+#      state: latest
 
-  - name: tell user to finish setting up postgres
-    debug:
-      msg: "Either uncomment the postgres setup or manually login and initialize"
+#   - name: enable apache at boot
+#     service:
+#       name: postgresql
+#       enabled: yes
 
-#TODO: Figure out best way to make sure postgres database is initialized
-  - name: start postgres
-    service:
-      name: postgresql.service
-      state: started
-    register: postgres_service_info
-    ignore_errors: yes
+#   - name: tell user to finish setting up postgres
+#     debug:
+#       msg: "Either uncomment the postgres setup or manually login and initialize"
 
-  - when: postgres_service_info.failed #and postgres_service_info.changed == 'false'
-    block:
-      - name: debug inside of block
-        debug:
-          msg: "HI FROM CONDITIONAL BLOCK!"
+# #TODO: Figure out best way to make sure postgres database is initialized
+#   - name: start postgres
+#     service:
+#       name: postgresql.service
+#       state: started
+#     register: postgres_service_info
+#     ignore_errors: yes
 
- # only run the next 2 tasks once!
-      - name: initilize postgres
-        command: postgresql-setup initdb
+#   - when: postgres_service_info.failed #and postgres_service_info.changed == 'false'
+#     block:
+#       - name: debug inside of block
+#         debug:
+#           msg: "HI FROM CONDITIONAL BLOCK!"
 
-      - name: initilize postgres some more
-        command: chkconfig postgresql on
+#  # only run the next 2 tasks once!
+#       - name: initilize postgres
+#         command: postgresql-setup initdb
 
-      - name: start postgres
-        service:
-          name: postgresql.service
-          state: started
-        register: postgres_service_info
+#       - name: initilize postgres some more
+#         command: chkconfig postgresql on
+
+#       - name: start postgres
+#         service:
+#           name: postgresql.service
+#           state: started
+#         register: postgres_service_info
 
 
-  - name: Debug postgres.service info
-    debug:
-      var: postgres_service_info
+#   - name: Debug postgres.service info
+#     debug:
+#       var: postgres_service_info
 
 - name: deploy apache
   hosts: apps
