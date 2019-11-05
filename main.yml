@@ -25,6 +25,12 @@
   #     dest: /etc/yum.repos.d/open_three-tier-app.repo
   #     mode: 0644
 
+  - name: Configure OpenTLC yum repos
+    copy:
+      src: open_three-tier-app.repo
+      dest: /etc/yum.repos.d/open_three-tier-app.repo
+      mode: u=rw,go=r
+
 - name: include haproxy_tasks.yml file
   import_playbook: haproxy_tasks.yml
 
