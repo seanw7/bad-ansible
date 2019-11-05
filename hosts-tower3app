@@ -1,0 +1,14 @@
+[frontends] # These are the frontend serversmain.y
+frontend1 ansible_host=frontend1.ceba.internal
+
+[apps] ## These are the apps servers
+app1 ansible_host=app1.ceba.internal
+app2 ansible_host=app2.ceba.internal
+
+[appdbs] # These are the appdb servers
+appdb1 ansible_host=appdb1.ceba.internal
+
+[internal:children]
+frontends
+apps
+appdbs
