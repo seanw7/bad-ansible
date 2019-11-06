@@ -1,0 +1,46 @@
+---
+# tasks file for postgres_install
+  - name: Install postgres-server package with Yum
+    yum:
+     name: postgresql-server
+     state: latest
+
+#TODO: Fix incorrect template name after confirming its needed
+#   - name: enable apache at boot
+#     service:
+#       name: postgresql
+#       enabled: yes
+
+#TODO: Figure out best way to make sure postgres database is initialized
+  - name: start postgres
+    service:
+      name: postgresql.service
+      state: started
+      enabled: yes
+    register: postgres_service_info
+    ignore_errors: yes
+
+# TODO: good practive to test if a file exists instead of this method...
+  - when: postgres_service_info.failed #and postgres_service_info.changed == 'false'
+    block:
+ # only run the next 2 tasks once!
+      - name: initilize postgres
+        command: postgresql-setup initdb
+
+      - name: initilize postgres some more
+        command: chkconfig postgresql on
+
+      - name: start postgres
+        service:
+          name: postgresql.service
+          state: started
+          enabled: yes
+        register: postgres_service_info
+
+
+  - name: Debug postgres.service info
+    debug:
+      var: postgres_service_info
+
+
+      

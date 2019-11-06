@@ -1,0 +1,50 @@
+---
+# Bad ansible! This playbook is an example of poor/bad practices!
+# Bad practices may include:
+#
+#   Poor formatting and structure
+#   Poor use of YAML - but good enough to parse
+#   Inconsistent style
+#   Incorrect use of modules
+#   Poor module choice
+#   Unclear names
+#   Hard coding / poor use of variables
+#   Roles - what are roles?
+#   Bare variables
+#   No use of handlers
+
+- name: configuration
+  hosts: all
+  gather_facts: true # remove later! speeds up testing
+  become: true
+
+# Need conditionals in order to run these on specifc groups
+# while importing roles and running against hosts: all
+#   roles:
+#     - yum_config
+#     - haproxy_install
+#     - tomcat_install
+#     - postgres_install
+
+  tasks:
+  - name: Configure opentlc_yum
+    include_role:
+      name: opentlc_yum
+
+  - name: Configure HAProxy on frontend servers 
+    include_role:
+      name: haproxy_install
+    when: >-
+      'frontends' in group_names
+
+  - name: Configure Tomcat on app servers
+    include_role:
+      name: tomcat_install
+    when: >-
+      'apps' in group_names
+
+  - name: Configure PostgreSQL on appdb servers
+    include_role:
+      name: postgres_install
+    when: >-
+      'appdbs' in group_names
